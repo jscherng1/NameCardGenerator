@@ -46,6 +46,7 @@ const mobileColorPickerTitle = document.querySelector("#mobileColorPickerTitle")
 const mobileColorCancel = document.querySelector("#mobileColorCancel");
 const mobileColorDone = document.querySelector("#mobileColorDone");
 const mobileColorButtons = [...document.querySelectorAll(".mobile-color-button")];
+const previewStage = document.querySelector(".preview-stage");
 
 let people = [];
 let activeIndex = -1;
@@ -163,8 +164,11 @@ function openMobileColorPicker(button) {
   colorBeforePicker = activeColorInput.value;
   mobileColorPickerTitle.textContent = button.getAttribute("aria-label");
   mobileColorPreview.style.setProperty("--selected-color", activeColorInput.value);
-  mobileColorPicker.hidden = false;
-  document.body.style.overflow = "hidden";
+  previewStage.scrollIntoView({ behavior: "auto", block: "start" });
+  requestAnimationFrame(() => {
+    mobileColorPicker.hidden = false;
+    document.body.classList.add("mobile-color-picker-open");
+  });
 }
 
 function closeMobileColorPicker(restoreColor = false) {
@@ -173,9 +177,16 @@ function closeMobileColorPicker(restoreColor = false) {
     activeColorInput.dispatchEvent(new Event("input", { bubbles: true }));
   }
   mobileColorPicker.hidden = true;
-  document.body.style.overflow = "";
+  document.body.classList.remove("mobile-color-picker-open");
   activeColorInput = null;
   syncMobileColorButtons();
+}
+
+function showMobilePreview() {
+  if (!window.matchMedia("(max-width: 520px)").matches) return;
+  requestAnimationFrame(() => {
+    previewStage.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 function roundRect(x, y, width, height, radius) {
@@ -880,6 +891,7 @@ inputs.bgImage.addEventListener("change", (event) => {
     backgroundImage = image;
     backgroundStatus.textContent = `已套用背景圖：${file.name}`;
     drawBadge(currentPerson());
+    showMobilePreview();
     URL.revokeObjectURL(image.src);
   };
   image.onerror = () => {
