@@ -69,18 +69,51 @@
           </div>
 
           <div class="palette-row">
-            <label>
+            <label class="color-field">
               背景色
               <input id="bgColorInput" type="color" value="#F8FBF4" />
+              <button class="mobile-color-button" type="button" data-color-target="bgColorInput" aria-label="選擇背景色">
+                <span class="mobile-color-swatch" aria-hidden="true"></span>
+                <span>點選顏色</span>
+              </button>
             </label>
-            <label>
+            <label class="color-field">
               裝飾色
               <input id="accentColorInput" type="color" value="#BBD8A3" />
+              <button class="mobile-color-button" type="button" data-color-target="accentColorInput" aria-label="選擇裝飾色">
+                <span class="mobile-color-swatch" aria-hidden="true"></span>
+                <span>點選顏色</span>
+              </button>
             </label>
-            <label>
+            <label class="color-field">
               輔助色
               <input id="softColorInput" type="color" value="#EAF4DF" />
+              <button class="mobile-color-button" type="button" data-color-target="softColorInput" aria-label="選擇輔助色">
+                <span class="mobile-color-swatch" aria-hidden="true"></span>
+                <span>點選顏色</span>
+              </button>
             </label>
+          </div>
+
+          <div id="mobileColorPicker" class="mobile-color-picker" role="dialog" aria-modal="true" aria-labelledby="mobileColorPickerTitle" hidden>
+            <button class="mobile-color-backdrop" type="button" data-color-picker-close aria-label="關閉顏色選擇"></button>
+            <div class="mobile-color-panel">
+              <div class="mobile-color-heading">
+                <div>
+                  <h2 id="mobileColorPickerTitle">直接點選顏色</h2>
+                  <p>在色盤上點一下，或用手指拖曳到喜歡的顏色。</p>
+                </div>
+                <span id="mobileColorPreview" class="mobile-color-preview" aria-hidden="true"></span>
+              </div>
+              <div class="mobile-color-canvas-wrap">
+                <canvas id="mobileColorCanvas" width="720" height="480" aria-label="觸控顏色色盤"></canvas>
+                <span id="mobileColorMarker" class="mobile-color-marker" aria-hidden="true"></span>
+              </div>
+              <div class="mobile-color-actions">
+                <button id="mobileColorCancel" class="secondary-button" type="button">取消</button>
+                <button id="mobileColorDone" class="primary-action" type="button">完成</button>
+              </div>
+            </div>
           </div>
 
           <div class="size-box">

@@ -38,10 +38,20 @@ const downloadPdfButton = document.querySelector("#downloadPdfButton");
 const clearBatchButton = document.querySelector("#clearBatchButton");
 const clearBgImageButton = document.querySelector("#clearBgImageButton");
 const exportQualityInput = document.querySelector("#exportQualityInput");
+const mobileColorPicker = document.querySelector("#mobileColorPicker");
+const mobileColorCanvas = document.querySelector("#mobileColorCanvas");
+const mobileColorMarker = document.querySelector("#mobileColorMarker");
+const mobileColorPreview = document.querySelector("#mobileColorPreview");
+const mobileColorPickerTitle = document.querySelector("#mobileColorPickerTitle");
+const mobileColorCancel = document.querySelector("#mobileColorCancel");
+const mobileColorDone = document.querySelector("#mobileColorDone");
+const mobileColorButtons = [...document.querySelectorAll(".mobile-color-button")];
 
 let people = [];
 let activeIndex = -1;
 let backgroundImage = null;
+let activeColorInput = null;
+let colorBeforePicker = "";
 
 const baseSize = {
   width: 1080,
@@ -96,6 +106,76 @@ function hexToRgb(hex) {
 function rgba(hex, alpha) {
   const { r, g, b } = hexToRgb(hex);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function drawMobileColorPalette() {
+  const paletteContext = mobileColorCanvas.getContext("2d");
+  const { width, height } = mobileColorCanvas;
+  const hueGradient = paletteContext.createLinearGradient(0, 0, width, 0);
+  [
+    [0, "#ff0000"],
+    [1 / 6, "#ffff00"],
+    [2 / 6, "#00ff00"],
+    [3 / 6, "#00ffff"],
+    [4 / 6, "#0000ff"],
+    [5 / 6, "#ff00ff"],
+    [1, "#ff0000"],
+  ].forEach(([offset, color]) => hueGradient.addColorStop(offset, color));
+  paletteContext.fillStyle = hueGradient;
+  paletteContext.fillRect(0, 0, width, height);
+
+  const lightGradient = paletteContext.createLinearGradient(0, 0, 0, height);
+  lightGradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+  lightGradient.addColorStop(0.48, "rgba(255, 255, 255, 0)");
+  lightGradient.addColorStop(0.52, "rgba(0, 0, 0, 0)");
+  lightGradient.addColorStop(1, "rgba(0, 0, 0, 1)");
+  paletteContext.fillStyle = lightGradient;
+  paletteContext.fillRect(0, 0, width, height);
+}
+
+function syncMobileColorButtons() {
+  mobileColorButtons.forEach((button) => {
+    const input = document.querySelector(`#${button.dataset.colorTarget}`);
+    button.style.setProperty("--selected-color", input.value);
+  });
+}
+
+function setMobilePickerColor(event) {
+  if (!activeColorInput) return;
+  const bounds = mobileColorCanvas.getBoundingClientRect();
+  const x = Math.max(0, Math.min(bounds.width, event.clientX - bounds.left));
+  const y = Math.max(0, Math.min(bounds.height, event.clientY - bounds.top));
+  const pixelX = Math.min(mobileColorCanvas.width - 1, Math.round((x / bounds.width) * mobileColorCanvas.width));
+  const pixelY = Math.min(mobileColorCanvas.height - 1, Math.round((y / bounds.height) * mobileColorCanvas.height));
+  const [r, g, b] = mobileColorCanvas.getContext("2d").getImageData(pixelX, pixelY, 1, 1).data;
+  const color = `#${[r, g, b].map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+
+  activeColorInput.value = color;
+  mobileColorPreview.style.setProperty("--selected-color", color);
+  mobileColorMarker.style.left = `${(x / bounds.width) * 100}%`;
+  mobileColorMarker.style.top = `${(y / bounds.height) * 100}%`;
+  syncMobileColorButtons();
+  activeColorInput.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function openMobileColorPicker(button) {
+  activeColorInput = document.querySelector(`#${button.dataset.colorTarget}`);
+  colorBeforePicker = activeColorInput.value;
+  mobileColorPickerTitle.textContent = button.getAttribute("aria-label");
+  mobileColorPreview.style.setProperty("--selected-color", activeColorInput.value);
+  mobileColorPicker.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+function closeMobileColorPicker(restoreColor = false) {
+  if (restoreColor && activeColorInput) {
+    activeColorInput.value = colorBeforePicker;
+    activeColorInput.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  mobileColorPicker.hidden = true;
+  document.body.style.overflow = "";
+  activeColorInput = null;
+  syncMobileColorButtons();
 }
 
 function roundRect(x, y, width, height, radius) {
@@ -764,6 +844,33 @@ Object.values(inputs).forEach((input) => {
   }
 });
 
+mobileColorButtons.forEach((button) => {
+  button.addEventListener("click", () => openMobileColorPicker(button));
+});
+
+mobileColorCanvas.addEventListener("pointerdown", (event) => {
+  mobileColorCanvas.setPointerCapture(event.pointerId);
+  setMobilePickerColor(event);
+});
+mobileColorCanvas.addEventListener("pointermove", (event) => {
+  if (mobileColorCanvas.hasPointerCapture(event.pointerId)) {
+    setMobilePickerColor(event);
+  }
+});
+mobileColorCanvas.addEventListener("pointerup", (event) => {
+  if (mobileColorCanvas.hasPointerCapture(event.pointerId)) {
+    mobileColorCanvas.releasePointerCapture(event.pointerId);
+  }
+});
+mobileColorCancel.addEventListener("click", () => closeMobileColorPicker(true));
+mobileColorDone.addEventListener("click", () => closeMobileColorPicker());
+document.querySelector("[data-color-picker-close]").addEventListener("click", () => closeMobileColorPicker(true));
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !mobileColorPicker.hidden) {
+    closeMobileColorPicker(true);
+  }
+});
+
 inputs.bgImage.addEventListener("change", (event) => {
   const [file] = event.target.files;
   if (!file) return;
@@ -825,6 +932,8 @@ clearBatchButton.addEventListener("click", () => {
 });
 
 renderPeopleList();
+drawMobileColorPalette();
+syncMobileColorButtons();
 updateFontControls();
 applyBadgeSize();
 drawBadge();
