@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>智慧名牌製作系統（程老師設計）</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <aside class="panel controls" aria-label="名牌資料輸入">
+          <div class="brand-row">
+            <div class="mark" aria-hidden="true"></div>
+            <div>
+              <h1>智慧名牌製作系統<span>（程老師設計）</span></h1>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              中文/英文姓名
+              <input id="nameInput" type="text" value="王小明" autocomplete="name" />
+              <div class="inline-font-control">
+                <div class="font-control-top">
+                  <label class="auto-toggle">
+                    <input id="autoNameFontInput" type="checkbox" checked />
+                    自動
+                  </label>
+                  <span id="nameFontSizeValue">自動</span>
+                </div>
+                <input id="nameFontSizeInput" type="range" min="30" max="250" step="5" value="100" disabled />
+              </div>
+            </label>
+
+            <label>
+              職稱 / 工作組別
+              <select id="roleInput">
+                <option value="">空白</option>
+                <option>服務志工</option>
+                <option>活動組</option>
+                <option>場控組</option>
+                <option>隊輔</option>
+                <option>攝影組</option>
+                <option>機動組</option>
+                <option>報到組</option>
+              </select>
+            </label>
+
+            <label>
+              自訂職稱
+              <input id="customRoleInput" type="text" placeholder="輸入後會取代上方選項" />
+            </label>
+
+            <div class="inline-font-control">
+              <div class="font-control-top">
+                <label class="auto-toggle">
+                  <input id="autoRoleFontInput" type="checkbox" checked />
+                  自動
+                </label>
+                <span id="roleFontSizeValue">自動</span>
+              </div>
+              <input id="roleFontSizeInput" type="range" min="30" max="250" step="5" value="100" disabled />
+            </div>
+
+          </div>
+
+          <div class="palette-row">
+            <label>
+              背景色
+              <input id="bgColorInput" type="color" value="#F8FBF4" />
+            </label>
+            <label>
+              裝飾色
+              <input id="accentColorInput" type="color" value="#BBD8A3" />
+            </label>
+            <label>
+              輔助色
+              <input id="softColorInput" type="color" value="#EAF4DF" />
+            </label>
+          </div>
+
+          <div class="size-box">
+            <label>
+              名牌尺寸與比例
+              <select id="sizePresetInput">
+                <option value="9:13">9:13 直式名牌</option>
+                <option value="9:16">9:16 手機直式</option>
+                <option value="4:5">4:5 社群直式</option>
+                <option value="3:4">3:4 經典直式</option>
+                <option value="1:1">1:1 正方形</option>
+                <option value="custom">Custom 自訂尺寸</option>
+              </select>
+            </label>
+            <div id="customSizeFields" class="custom-size-fields">
+              <label>
+                寬度 cm
+                <input id="badgeWidthInput" type="number" min="3" max="25" step="0.01" value="9" />
+              </label>
+              <label>
+                高度 cm
+                <input id="badgeHeightInput" type="number" min="3" max="35" step="0.01" value="13" />
+              </label>
+            </div>
+            <p class="size-hint">預設比例會自動連動寬高；Custom 可分別調整。PDF 會依實際公分排版，列印時請選「實際大小／100%」。</p>
+          </div>
+
+          <div class="pattern-box">
+            <label>
+              背景圖案
+              <select id="patternInput">
+                <option value="leaves">柔和葉片</option>
+                <option value="waves">簡化線條</option>
+                <option value="dots">活潑圓點</option>
+                <option value="sparkles">小星芒</option>
+                <option value="confetti">青春彩帶</option>
+                <option value="blocks">幾何方塊</option>
+                <option value="bubbles">圓環泡泡</option>
+                <option value="diagonal">清爽斜線</option>
+                <option value="none">無圖案</option>
+              </select>
+            </label>
+            <div class="pattern-actions">
+              <label class="file-button">
+                <input id="bgImageInput" type="file" accept="image/png,image/jpeg,image/webp" />
+                上傳背景圖
+              </label>
+              <button id="clearBgImageButton" class="secondary-button" type="button">移除背景圖</button>
+            </div>
+            <p id="backgroundStatus">可使用內建圖案，或上傳自己的背景圖片。</p>
+          </div>
+
+          <div class="upload-zone">
+            <label class="file-button">
+              <input id="excelInput" type="file" accept=".xlsx,.xls,.csv" />
+              匯入 Excel 名單
+            </label>
+            <p id="importStatus">可匯入欄位：姓名、中文/英文姓名、職稱、工作組別。</p>
+          </div>
+
+          <div class="batch-list" aria-label="批次名單">
+            <div class="list-heading">
+              <span>批次名單</span>
+              <button id="clearBatchButton" type="button">清空</button>
+            </div>
+            <div id="peopleList" class="people-list"></div>
+          </div>
+
+          <div class="export-quality-box">
+            <label>
+              輸出解析度
+              <select id="exportQualityInput">
+                <option value="compact">小檔案（150 DPI）</option>
+                <option value="standard" selected>標準（200 DPI）</option>
+                <option value="high">高品質（300 DPI）</option>
+              </select>
+            </label>
+            <p>同時套用於 PNG 與 PDF；只影響清晰度和檔案大小，不改變實際列印尺寸。</p>
+          </div>
+
+          <div class="action-row">
+            <button id="downloadPngButton" class="primary-action" type="button">下載 PNG</button>
+            <button id="downloadPdfButton" type="button">批次 PDF</button>
+          </div>
+        </aside>
+
+        <section class="preview-stage" aria-label="即時名牌預覽">
+          <div class="preview-topbar">
+            <div>
+              <h2>即時預覽</h2>
+              <p>名牌圖面只保留姓名與職稱文字</p>
+            </div>
+            <span id="previewSizeLabel">9 x 13 cm</span>
+          </div>
+          <canvas id="badgeCanvas" width="1080" height="1560" aria-label="名牌預覽"></canvas>
+        </section>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
